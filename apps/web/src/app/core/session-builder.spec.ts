@@ -45,4 +45,15 @@ describe('session-builder', () => {
       }
     }
   });
+
+  it('can target uppercase letters in letter-pick exercises', () => {
+    const exercises = buildSessionExercises(HY_SCRIPT, emptyProgress(), {
+      random: rng(0),
+      exerciseCount: 20,
+    });
+
+    expect(
+      exercises.some((ex) => ex.kind === 'letter-pick' && ex.targetLetter === ex.targetLetter.toUpperCase()),
+    ).toBe(true);
+  });
 });

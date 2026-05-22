@@ -38,10 +38,13 @@ const RU_HINTS: readonly string[] = [
   'ya',
 ];
 
-const alphabet = [...RU_ORDER].map((letter, i) => ({
-  letter,
-  latinHint: RU_HINTS[i] ?? '',
-}));
+const alphabet = [...RU_ORDER].flatMap((letter, i) => {
+  const latinHint = RU_HINTS[i] ?? '';
+  return [
+    { letter: letter.toLocaleUpperCase('ru-RU'), latinHint },
+    { letter, latinHint },
+  ];
+});
 
 export const RU_SCRIPT: ScriptDefinition = {
   id: 'ru',

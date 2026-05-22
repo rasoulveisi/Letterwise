@@ -55,10 +55,13 @@ function buildAlphabet(): readonly AlphabetEntry[] {
       `Alphabet length mismatch: ${letters.length} letters vs ${LATIN_HINTS.length} hints`,
     );
   }
-  return letters.map((letter, i) => ({
-    letter,
-    latinHint: LATIN_HINTS[i] ?? '',
-  }));
+  return letters.flatMap((letter, i) => {
+    const latinHint = LATIN_HINTS[i] ?? '';
+    return [
+      { letter: letter.toLocaleUpperCase('hy-AM'), latinHint },
+      { letter, latinHint },
+    ];
+  });
 }
 
 export const EASTERN_ARMENIAN_ALPHABET: readonly AlphabetEntry[] = buildAlphabet();

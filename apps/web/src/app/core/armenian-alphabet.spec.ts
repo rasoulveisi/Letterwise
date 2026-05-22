@@ -2,10 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { EASTERN_ARMENIAN_ALPHABET } from './armenian-alphabet';
 
 describe('armenian-alphabet', () => {
-  it('has 39 unique letters in standard order', () => {
-    expect(EASTERN_ARMENIAN_ALPHABET.length).toBe(39);
+  it('has 78 unique uppercase and lowercase letters in standard order', () => {
+    expect(EASTERN_ARMENIAN_ALPHABET.length).toBe(78);
     const glyphs = EASTERN_ARMENIAN_ALPHABET.map((e) => e.letter);
-    expect(new Set(glyphs).size).toBe(39);
+    expect(new Set(glyphs).size).toBe(78);
+    expect(glyphs.slice(0, 4)).toEqual(['Ա', 'ա', 'Բ', 'բ']);
   });
 
   it('every entry has a non-empty latin hint', () => {
