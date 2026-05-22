@@ -406,12 +406,12 @@ Commit placeholder config shape, not real private secrets:
 export const environment = {
   production: false,
   supabaseUrl: 'https://YOUR_PROJECT_REF.supabase.co',
-  supabaseAnonKey: 'YOUR_ANON_KEY',
+  supabasePublishableKey: 'YOUR_PUBLISHABLE_KEY',
   apiBaseUrl: '/api',
 };
 ```
 
-Real values come from local uncommitted overrides or deployment/CI injection. The anon key is public, but backend secrets are never frontend config.
+Real values come from local uncommitted overrides or deployment/CI injection. Use the current Supabase publishable key (`sb_publishable_...`) for browser code; backend secret keys are never frontend config.
 
 - [ ] **Step 3: Add dev proxy**
 
@@ -679,6 +679,6 @@ git commit -m "feat(auth): add account sync UI and documentation"
 
 ## Plan self-review
 
-- Intentional placeholders remain for Supabase project URL, anon key, JWKS URL, production site URL, preview URLs, and OAuth provider setup. Do not commit real secrets.
+- Intentional placeholders remain for Supabase project URL, publishable key, JWKS URL, production site URL, preview URLs, and OAuth provider setup. Do not commit real secrets.
 - The API plan intentionally does not validate per-letter numeric bounds, matching the approved MVP scope.
 - The plan intentionally does not add backend rate limiting, Apple OAuth, service-role normal-path DB access, or a persisted operation queue.

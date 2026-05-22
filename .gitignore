@@ -40,6 +40,22 @@ testem.log
 /typings
 __screenshots__/
 
+# Local environment values
+.env
+.env.*
+!.env.example
+apps/api/.env
+apps/api/.env.*
+!apps/api/.env.example
+apps/web/src/environments/environment.local.ts
+apps/web/src/environments/environment.local.prod.ts
+
 # System files
 .DS_Store
 Thumbs.db
+
+
+
+.nx/cache
+.nx/workspace-data
+vitest.config.*.timestamp*

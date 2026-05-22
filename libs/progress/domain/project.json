@@ -1,0 +1,19 @@
+{
+  "name": "progress-domain",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/progress/domain/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/progress/domain",
+        "main": "libs/progress/domain/src/index.ts",
+        "tsConfig": "libs/progress/domain/tsconfig.lib.json",
+        "assets": ["libs/progress/domain/*.md"]
+      }
+    }
+  },
+  "tags": []
+}

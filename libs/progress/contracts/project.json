@@ -1,0 +1,19 @@
+{
+  "name": "progress-contracts",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/progress/contracts/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/progress/contracts",
+        "main": "libs/progress/contracts/src/index.ts",
+        "tsConfig": "libs/progress/contracts/tsconfig.lib.json",
+        "assets": ["libs/progress/contracts/*.md"]
+      }
+    }
+  },
+  "tags": []
+}
