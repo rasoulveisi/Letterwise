@@ -1,2 +1,5 @@
+# API: proxy frontend /api calls to the Render backend
+/api/* https://alphabet-fdy9.onrender.com/api/:splat 200
+
 # SPA: Angular client routes — rewrite to index.html (HTTP 200, not redirect)
 /*    /index.html   200
