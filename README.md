@@ -104,13 +104,122 @@ The normal sync path uses user-scoped Supabase clients with the request JWT, so 
 
 Run `specs/supabase/001_user_script_progress.sql` in Supabase SQL editor or through the Supabase CLI. Enable Google OAuth and add local, production, and preview redirect URLs that cover route paths, since sign-in redirects back to the current route.
 
+For a production deployment:
+
+- Supabase project URL: `https://YOUR_PROJECT_REF.supabase.co`
+- Production web URL: `https://YOUR_NETLIFY_SITE.netlify.app`
+- Production API URL: `https://YOUR_RENDER_SERVICE.onrender.com/api`
+
+Supabase `Authentication > URL Configuration`:
+
+```text
+Site URL: https://YOUR_NETLIFY_SITE.netlify.app
+
+Redirect URLs:
+https://YOUR_NETLIFY_SITE.netlify.app
+https://YOUR_NETLIFY_SITE.netlify.app/**
+http://localhost:4200
+http://localhost:4200/**
+```
+
+Google Cloud OAuth client:
+
+```text
+Authorized redirect URI:
+https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback
+```
+
+Do not use `localhost:3000` as a Supabase auth callback or site URL. `localhost:3000` is only the local API server.
+
 Synced progress is stored as JSON in `public.user_script_progress`. The browser calls the NestJS API; it does not directly write application progress tables.
 
 ## Deploying a release
 
-The web app is a **static SPA**. Configure your host so **all paths** serve `index.html` (HTTP 200), or ship the included SPA rule from `apps/web/public/_redirects` with your static files (for example on **Netlify**).
+The production deployment uses Netlify for the Angular SPA and Render for the NestJS API.
 
-Publish the browser output folder produced by `npx nx build web` (currently `dist/apps/web/browser/`). Deploy the API as a Node service with the backend environment variables above.
+### Render API
+
+Render service:
+
+- Type: Web Service
+- Runtime: Node
+- Root directory: repository root
+- Build command: `npm ci && npx nx build api`
+- Start command: `node dist/apps/api/main.js`
+
+Render environment:
+
+```text
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
+SUPABASE_JWKS_URL=https://YOUR_PROJECT_REF.supabase.co/auth/v1/.well-known/jwks.json
+WEB_ORIGIN=https://YOUR_NETLIFY_SITE.netlify.app
+NODE_VERSION=20
+```
+
+Render provides `PORT`; do not hard-code it. Health check:
+
+```bash
+curl https://YOUR_RENDER_SERVICE.onrender.com/api/health
+```
+
+Expected:
+
+```json
+{"status":"ok"}
+```
+
+### Netlify Web
+
+Netlify site:
+
+- Build command: `npm ci && npx nx build web`
+- Publish directory: `dist/apps/web/browser`
+
+Netlify environment:
+
+```text
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
+```
+
+These values must be set in Netlify, even if they are also set in GitHub. GitHub repository or environment variables are not automatically available to Netlify builds.
+
+The web app is a **static SPA**. `apps/web/public/_redirects` contains both the API proxy and SPA fallback:
+
+```text
+/api/* https://YOUR_RENDER_SERVICE.onrender.com/api/:splat 200
+/* /index.html 200
+```
+
+After Netlify deploys, verify the proxy:
+
+```bash
+curl https://YOUR_NETLIFY_SITE.netlify.app/api/health
+```
+
+Expected:
+
+```json
+{"status":"ok"}
+```
+
+### Production OAuth Troubleshooting
+
+If clicking `Sign in` does nothing, inspect the deployed JavaScript bundle for placeholders:
+
+```text
+YOUR_PROJECT_REF
+YOUR_PUBLISHABLE_KEY
+```
+
+If either appears, Netlify built without `SUPABASE_URL` or `SUPABASE_PUBLISHABLE_KEY`. Add the environment variables in Netlify and redeploy with cache cleared.
+
+If Google login returns to `localhost:3000`, Supabase `Site URL` is wrong. Set it to your Netlify site URL.
+
+If Supabase `/auth/v1/user` returns `Invalid API key`, the `SUPABASE_PUBLISHABLE_KEY` value in Netlify is missing, truncated, quoted, or copied from the wrong Supabase project.
+
+Never paste OAuth `access_token` or `refresh_token` values into issue trackers, docs, or chat. Revoke the session in Supabase if that happens.
 
 ## Privacy
 
