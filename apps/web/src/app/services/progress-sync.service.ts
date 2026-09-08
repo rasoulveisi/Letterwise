@@ -41,7 +41,7 @@ export class ProgressSyncService {
       if (this.auth.signedIn()) {
         void this.syncActiveFirst();
       } else {
-        this.status.set(globalThis.navigator?.onLine === false ? 'offline' : 'local');
+        this.setStatusByConnectivity('local');
       }
     });
   }
@@ -57,7 +57,7 @@ export class ProgressSyncService {
     if (!this.auth.signedIn()) {
       return;
     }
-    this.status.set(globalThis.navigator?.onLine === false ? 'offline' : 'pending');
+    this.setStatusByConnectivity('pending');
     const existing = this.pushTimers.get(scriptId);
     if (existing) {
       clearTimeout(existing);
@@ -69,8 +69,8 @@ export class ProgressSyncService {
   }
 
   async syncActiveFirst(): Promise<void> {
-    if (!this.auth.signedIn() || globalThis.navigator?.onLine === false) {
-      this.status.set(this.auth.signedIn() ? 'offline' : 'local');
+    if (!this.auth.signedIn() || this.isOffline()) {
+      this.setStatusByConnectivity('local');
       return;
     }
 
@@ -101,7 +101,7 @@ export class ProgressSyncService {
       }
       this.status.set('saved');
     } catch {
-      this.status.set(globalThis.navigator?.onLine === false ? 'offline' : 'error');
+      this.setStatusByConnectivity('error');
     }
   }
 
@@ -118,7 +118,15 @@ export class ProgressSyncService {
       }
       this.status.set('saved');
     } catch {
-      this.status.set(globalThis.navigator?.onLine === false ? 'offline' : 'error');
+      this.setStatusByConnectivity('error');
     }
+  }
+
+  private isOffline(): boolean {
+    return globalThis.navigator?.onLine === false;
+  }
+
+  private setStatusByConnectivity(status: Exclude<SyncStatus, 'offline'>): void {
+    this.status.set(this.isOffline() ? 'offline' : status);
   }
 }
