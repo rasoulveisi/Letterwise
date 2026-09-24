@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
+import { CurriculumModule } from './curriculum/curriculum.module';
 import { ProgressModule } from './progress/progress.module';
 import { SupabaseModule } from './supabase/supabase.module';
 
@@ -13,6 +14,7 @@ import { SupabaseModule } from './supabase/supabase.module';
     }),
     AuthModule,
     SupabaseModule,
+    CurriculumModule,
     ProgressModule,
   ],
   controllers: [AppController],

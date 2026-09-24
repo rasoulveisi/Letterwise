@@ -2,7 +2,13 @@ import { HttpClient, HttpErrorResponse, HttpHandlerFn, HttpInterceptorFn, HttpRe
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import type { AppProgressV2 } from '@letterwise/progress/domain';
-import type { ProgressListResponse, ProgressResponse } from '@letterwise/progress/contracts';
+import type {
+  CurriculumResponse,
+  LessonCompleteRequest,
+  LessonCompleteResponse,
+  ProgressListResponse,
+  ProgressResponse,
+} from '@letterwise/progress/contracts';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -32,6 +38,16 @@ export class ProgressApiClient {
   putProgress(scriptId: string, progress: AppProgressV2): Promise<ProgressResponse> {
     return this.withAuthRetry(() =>
       firstValueFrom(this.http.put<ProgressResponse>(`${this.baseUrl}/progress/${scriptId}`, { progress })),
+    );
+  }
+
+  getCurriculum(scriptId: string): Promise<CurriculumResponse> {
+    return firstValueFrom(this.http.get<CurriculumResponse>(`${this.baseUrl}/curriculum/${scriptId}`));
+  }
+
+  completeLesson(scriptId: string, payload: LessonCompleteRequest): Promise<LessonCompleteResponse> {
+    return this.withAuthRetry(() =>
+      firstValueFrom(this.http.put<LessonCompleteResponse>(`${this.baseUrl}/progress/${scriptId}/lesson-complete`, payload)),
     );
   }
 

@@ -18,6 +18,20 @@ export class ProgressController {
     return this.progressService.getOne(this.accessToken(request), this.userId(request), scriptId);
   }
 
+  @Put(':scriptId/lesson-complete')
+  completeLesson(
+    @Req() request: AuthenticatedRequest,
+    @Param('scriptId') scriptId: string,
+    @Body() body: unknown,
+  ) {
+    return this.progressService.completeLesson(
+      this.accessToken(request),
+      this.userId(request),
+      scriptId,
+      body,
+    );
+  }
+
   @Put(':scriptId')
   upsert(@Req() request: AuthenticatedRequest, @Param('scriptId') scriptId: string, @Body() body: unknown) {
     return this.progressService.upsert(this.accessToken(request), this.userId(request), scriptId, body);

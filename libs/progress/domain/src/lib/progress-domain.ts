@@ -18,6 +18,11 @@ export interface AppProgressV1 {
 export interface AppProgressV2 {
   readonly version: 2;
   readonly letters: Readonly<Record<string, LetterProgressV2>>;
+  readonly completedLessons?: readonly string[];
+  readonly xp?: number;
+  readonly hearts?: number;
+  readonly streakCount?: number;
+  readonly lastCompletedDate?: string;
 }
 
 export type AppProgress = AppProgressV1 | AppProgressV2;
@@ -44,7 +49,23 @@ export function mergeProgressV2(remote: AppProgressV2 | null | undefined, local:
     letters[key] = chooseLetter(remoteLetter, localLetter) as LetterProgressV2;
   }
 
-  return { version: 2, letters };
+  const completedLessons = Array.from(
+    new Set([...(remote?.completedLessons ?? []), ...(local.completedLessons ?? [])]),
+  );
+  const xp = Math.max(remote?.xp ?? 0, local.xp ?? 0);
+  const streakCount = Math.max(remote?.streakCount ?? 0, local.streakCount ?? 0);
+  const hearts = local.hearts ?? remote?.hearts ?? 5;
+  const lastCompletedDate = local.lastCompletedDate ?? remote?.lastCompletedDate;
+
+  return {
+    version: 2,
+    letters,
+    completedLessons,
+    xp,
+    streakCount,
+    hearts,
+    ...(lastCompletedDate !== undefined ? { lastCompletedDate } : {}),
+  };
 }
 
 export function createMonotonicTimestamp(now: () => number = () => Date.now()): () => number {

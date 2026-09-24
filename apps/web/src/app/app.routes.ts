@@ -7,7 +7,7 @@ export const routes: Routes = [
   },
   {
     path: 'learn',
-    redirectTo: 'hy/learn/0',
+    redirectTo: 'hy/path',
     pathMatch: 'full',
   },
   {
@@ -19,7 +19,15 @@ export const routes: Routes = [
     path: ':scriptId',
     loadComponent: () => import('./pages/script-shell/script-shell').then((m) => m.ScriptShell),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'learn/0' },
+      { path: '', pathMatch: 'full', redirectTo: 'path' },
+      {
+        path: 'path',
+        loadComponent: () => import('./pages/curriculum-path/curriculum-path').then((m) => m.CurriculumPath),
+      },
+      {
+        path: 'lesson/:lessonId',
+        loadComponent: () => import('./pages/lesson-runner/lesson-runner').then((m) => m.LessonRunner),
+      },
       {
         path: 'learn',
         pathMatch: 'full',

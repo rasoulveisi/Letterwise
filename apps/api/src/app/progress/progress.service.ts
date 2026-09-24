@@ -1,5 +1,9 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { UpsertProgressRequestSchema } from '@letterwise/progress/contracts';
+import {
+  LessonCompleteRequestSchema,
+  type LessonCompleteResponse,
+  UpsertProgressRequestSchema,
+} from '@letterwise/progress/contracts';
 import { mergeProgressV2, type AppProgressV2 } from '@letterwise/progress/domain';
 import { isKnownScriptId, KNOWN_SCRIPT_IDS } from '@letterwise/scripts/domain';
 import { SupabaseClientFactory } from '../supabase/supabase-client.factory';
@@ -83,6 +87,114 @@ export class ProgressService {
       scriptId: row.script_id,
       progress: this.parseStoredProgress(row.progress),
       updatedAt: row.updated_at,
+    };
+  }
+
+  async completeLesson(
+    accessToken: string,
+    userId: string,
+    scriptId: string,
+    body: unknown,
+  ): Promise<LessonCompleteResponse> {
+    const parsed = LessonCompleteRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException('Invalid lesson complete payload');
+    }
+    this.assertScriptId(scriptId);
+
+    const existing = await this.selectOne(accessToken, userId, scriptId);
+    const existingProgress: AppProgressV2 = existing
+      ? this.parseStoredProgress(existing.progress)
+      : { version: 2, letters: {} };
+    const rawProgress =
+      existing?.progress && typeof existing.progress === 'object'
+        ? (existing.progress as Record<string, unknown>)
+        : {};
+
+    const existingCompleted =
+      existingProgress.completedLessons ??
+      (rawProgress['completedLessons'] as readonly string[] | undefined) ??
+      [];
+    const completedLessons = Array.from(new Set([...existingCompleted, parsed.data.lessonId]));
+
+    const existingXp =
+      existingProgress.xp ?? (rawProgress['xp'] as number | undefined) ?? 0;
+    const xp = existingXp + parsed.data.xpGained;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const lastDate =
+      existingProgress.lastCompletedDate ??
+      (rawProgress['lastCompletedDate'] as string | undefined);
+    let streak =
+      existingProgress.streakCount ??
+      (rawProgress['streakCount'] as number | undefined) ??
+      0;
+    if (!lastDate) {
+      streak = 1;
+    } else if (lastDate === today) {
+      streak = Math.max(streak, 1);
+    } else {
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      if (lastDate === yesterday) {
+        streak += 1;
+      } else {
+        streak = 1;
+      }
+    }
+
+    const hearts =
+      parsed.data.hearts ??
+      existingProgress.hearts ??
+      (rawProgress['hearts'] as number | undefined) ??
+      5;
+
+    const updatedProgress: AppProgressV2 = {
+      ...existingProgress,
+      completedLessons,
+      xp,
+      streakCount: streak,
+      hearts,
+      lastCompletedDate: today,
+    };
+
+    const client = this.supabaseFactory.forUserToken(accessToken);
+
+    const upsertPayloadWithColumns = {
+      user_id: userId,
+      script_id: scriptId,
+      progress: updatedProgress,
+      completed_lessons: completedLessons,
+      xp,
+      hearts,
+      streak_count: streak,
+    };
+
+    const { error: upsertError } = await client
+      .from('user_script_progress')
+      .upsert(upsertPayloadWithColumns, { onConflict: 'user_id,script_id' });
+
+    if (upsertError) {
+      const fallback = await client
+        .from('user_script_progress')
+        .upsert(
+          {
+            user_id: userId,
+            script_id: scriptId,
+            progress: updatedProgress,
+          },
+          { onConflict: 'user_id,script_id' },
+        );
+
+      if (fallback.error) {
+        throw new InternalServerErrorException(fallback.error.message);
+      }
+    }
+
+    return {
+      completedLessons,
+      xp,
+      streakCount: streak,
+      hearts,
     };
   }
 
