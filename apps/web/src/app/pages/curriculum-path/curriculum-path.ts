@@ -67,11 +67,23 @@ import { ScriptContextService } from '../../services/script-context.service';
                   <h2 class="mt-1 text-lg font-bold leading-tight">{{ unit.title }}</h2>
                   <p class="mt-1 text-xs text-neutral-300">{{ unit.description }}</p>
                 </div>
-                @if (unit.lessons.length === 0) {
+                @if (isUnitCompleted(unit)) {
+                  <span
+                    class="shrink-0 rounded-full border border-emerald-500/40 bg-emerald-500/20 px-2.5 py-1 text-xs font-semibold text-emerald-300"
+                  >
+                    Completed ✓
+                  </span>
+                } @else if (isUnitUnlocked(unit)) {
+                  <span
+                    class="shrink-0 rounded-full border border-blue-500/40 bg-blue-500/20 px-2.5 py-1 text-xs font-semibold text-blue-300"
+                  >
+                    In Progress
+                  </span>
+                } @else {
                   <span
                     class="shrink-0 rounded-full border border-neutral-600 bg-neutral-800 px-2.5 py-1 text-xs font-medium text-neutral-400"
                   >
-                    {{ isUnit1Completed() ? 'Coming Next' : 'Locked - Complete Unit 1' }}
+                    Locked 🔒
                   </span>
                 }
               </div>
@@ -187,6 +199,17 @@ export class CurriculumPath {
 
   protected isLessonCurrent(lessonId: string): boolean {
     return this.isLessonUnlocked(lessonId) && !this.isLessonCompleted(lessonId);
+  }
+
+  protected isUnitCompleted(unit: CurriculumUnit): boolean {
+    if (!unit.lessons.length) return false;
+    return unit.lessons.every((l) => this.isLessonCompleted(l.id));
+  }
+
+  protected isUnitUnlocked(unit: CurriculumUnit): boolean {
+    if (!unit.lessons.length) return false;
+    const firstLesson = unit.lessons[0];
+    return firstLesson ? this.isLessonUnlocked(firstLesson.id) : false;
   }
 
   protected isUnit1Completed(): boolean {

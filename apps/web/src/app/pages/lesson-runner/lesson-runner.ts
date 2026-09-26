@@ -203,9 +203,14 @@ import { ScriptContextService } from '../../services/script-context.service';
                           type="button"
                           (click)="removeToken(tok, $index)"
                           class="flex h-12 min-w-11 touch-manipulation items-center justify-center rounded-xl border-2 border-blue-500 bg-white px-3 text-2xl font-bold text-blue-900 shadow-xs transition hover:border-rose-400 hover:bg-rose-50 hover:text-rose-700 active:scale-95"
-                          aria-label="Remove letter {{ tok }}"
+                          [class.min-w-16]="tok === ' '"
+                          [attr.aria-label]="tok === ' ' ? 'Remove space' : 'Remove letter ' + tok"
                         >
-                          {{ tok }}
+                          @if (tok === ' ') {
+                            <span class="text-xs font-semibold uppercase tracking-wider text-neutral-400">[space]</span>
+                          } @else {
+                            {{ tok }}
+                          }
                         </button>
                       }
                     }
@@ -218,9 +223,15 @@ import { ScriptContextService } from '../../services/script-context.service';
                         type="button"
                         (click)="pickToken(tok, $index)"
                         class="flex h-13 min-w-12 touch-manipulation items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 text-2xl font-bold text-neutral-900 shadow-sm transition hover:border-neutral-400 hover:bg-neutral-50 active:scale-95 active:bg-neutral-100"
-                        aria-label="Add letter {{ tok }}"
+                        [class.min-w-20]="tok === ' '"
+                        [class.bg-neutral-50]="tok === ' '"
+                        [attr.aria-label]="tok === ' ' ? 'Add space' : 'Add letter ' + tok"
                       >
-                        {{ tok }}
+                        @if (tok === ' ') {
+                          <span class="text-xs font-semibold uppercase tracking-wider text-neutral-500">␣ space</span>
+                        } @else {
+                          {{ tok }}
+                        }
                       </button>
                     }
                   </div>
